@@ -9,6 +9,8 @@ import {
 } from "@followupos/common";
 import { AttemptStatus, MessageStatus } from "@prisma/client";
 
+const SENDING_STALE_MS = 5 * 60 * 1000;
+
 const log = (message: string, details?: Record<string, unknown>) => {
   const payload = { message, ...details, timestamp: new Date().toISOString() };
   console.log(JSON.stringify(payload));
@@ -36,15 +38,22 @@ const processSendMessage = async (job: Job) => {
     return;
   }
 
-  if (message.status === MessageStatus.SENDING) {
-    log("Message already in sending state", { messageId: message.id });
-    return;
-  }
-
-  await prisma.message.update({
-    where: { id: message.id },
+  const staleBefore = new Date(Date.now() - SENDING_STALE_MS);
+  const claimResult = await prisma.message.updateMany({
+    where: {
+      id: message.id,
+      OR: [
+        { status: { in: [MessageStatus.PENDING, MessageStatus.FAILED] } },
+        { status: MessageStatus.SENDING, updatedAt: { lt: staleBefore } },
+      ],
+    },
     data: { status: MessageStatus.SENDING },
   });
+
+  if (claimResult.count === 0) {
+    log("Message already being processed", { messageId: message.id });
+    return;
+  }
 
   try {
     const providerResult = await sendOutboundMessage({
