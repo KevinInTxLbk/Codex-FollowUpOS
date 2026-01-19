@@ -13,7 +13,7 @@ FollowUpOS is a production-grade outreach operating system for agencies. It prov
 
 - Node.js 20+
 - Redis (for BullMQ queues)
-- SQLite (default local Prisma provider)
+- PostgreSQL (default local Prisma provider)
 
 ## Deterministic configuration invariants
 
@@ -31,7 +31,7 @@ npm install
 ### Configure the database
 
 ```powershell
-$env:DATABASE_URL="file:./packages/common/prisma/dev.db"
+$env:DATABASE_URL="postgresql://postgres:postgres@localhost:5432/followupos"
 ```
 
 ### Generate Prisma client and run migrations
