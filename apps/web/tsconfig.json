@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "preserve",
+    "module": "ESNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true
+  },
+  "include": ["next-env.d.ts", "src"]
+}
