@@ -10,6 +10,7 @@ import {
   sendMessageJobSchema,
 } from "@followupos/common";
 import {
+  Prisma,
   MessageChannel,
   MessageStatus,
   OutcomeStatus,
@@ -479,6 +480,13 @@ app.use(
       return res.status(err.status).json({
         ok: false,
         error: { message: err.message, code: err.code, details: err.details },
+      });
+    }
+
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2025") {
+      return res.status(404).json({
+        ok: false,
+        error: { message: "Resource not found", code: "NOT_FOUND" },
       });
     }
 
